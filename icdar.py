@@ -89,7 +89,17 @@ def load_annoatation(p):
     
     return np.array(text_polys, dtype=np.float32), np.array(text_tags, dtype=np.bool), labels
   
-  
+  def polygon_area(poly):
+    """
+    copied from anther implmentation used to know which polygon will be discarded
+    """
+    edge = [
+        (poly[1][0] - poly[0][0]) * (poly[1][1] + poly[0][1]),
+        (poly[2][0] - poly[1][0]) * (poly[2][1] + poly[1][1]),
+        (poly[3][0] - poly[2][0]) * (poly[3][1] + poly[2][1]),
+        (poly[0][0] - poly[3][0]) * (poly[0][1] + poly[3][1])
+    ]
+    return np.sum(edge)/2.
   
   
   
