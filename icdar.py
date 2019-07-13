@@ -101,7 +101,28 @@ def load_annoatation(p):
     ]
     return np.sum(edge)/2.
   
+  def check_and_validate_polys(polys, tags, xxx_todo_changeme):
+    
+    (h,w) = xxx_todo_changeme
+    if polys.shape[0] == 0:
+      return polys
+    
+    polys[:,:,0] = np.clip(polys[:,:,0],0,w-1)
+    polys[:,:,1] = np.clip(polys[:,:,1],0,h-1)
+    
+    validated_polys = []
+    validated_tags = []
+    for poly,tag in zip(polys,tags):
+      p_area = polygon_area(poly)
+      if abs(p_area) < 1:
+        continue
+      if p_area > 0:
+        poly = poly[(0,3,2,1),:]
+      validated_polys.append(poly)
+      validated_tags.append(tag)
+    return np.array(validated_polys), np.array(validated_tags)
   
+      
   
   
   
