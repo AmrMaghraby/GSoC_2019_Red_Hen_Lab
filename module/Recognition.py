@@ -35,4 +35,23 @@ class Recognition(object):
     
   def build_graph(self,rois,seq_len,nums):
     
+    cnn_feature = self.cnn(rois)
+    cnn_feature = tf.squeeze(cnn_feature,axis=-1)
+    reshape_cnn_feature = cnn_feature
+    lstm_output = self.bilstm(reshape_cnn_feature,seq_len)
+    logits = tf.reshape(lstm_output,[-1,self.rnn_hidden_num * 2])
+    W = tf.Variable(tf.truncated_normal([self.rnn_hidden_num * 2, self.num_classes], stddev=0.1), name="W")
+		b = tf.Variable(tf.constant(0., shape=[self.num_classes]), name="b")
+		logits = tf.matmul(logits, W) + b
+		logits = tf.reshape(logits, [nums, -1, self.num_classes])
+		logits = tf.transpose(logits, (1, 0, 2))
+		return logits
+  
+  def loss(self,logits,targets,seq_len):
+    
+    loss = tf.nn.CTC_loss(targets, logits, seq_len)
+    recognition_loss = tf.reduce_mean(loss)
+    return recognition_loss
+    
+    
   
