@@ -22,3 +22,76 @@ tf.app.flags.DEFINE_integer('max_text_size',800,'if it is greater that this it w
 tf.app.flags.DEFINE_float('min_crop_side_ratio',0.1,'')
 tf.app.flags.DEFINE_string('geometry','RBOX','')
 
+FLAGS = tf.app.flags.FLAGS
+
+def get_images():
+  files = []
+  for ext in ['jpg','jpeg','png','JPG']:
+    files.extend(glob.glob(os.path.join(FLAGS.training_data_path,'*.{}'.format(ext))))
+  return files
+
+def label_to_array(label):
+  try:
+    label = label.replace(' ','')
+    return [config.CHAR_VECTOR.index(x) for x in label]
+  except Exception as ex:
+    print(label)
+    raise ex
+  
+def ground_truth_to_word(ground_truth):
+  try:
+    return ''.join[config.CHAR_VECTOR[i] for i in ground_truth if i != 1]
+  except Exception as ex:
+    print(ground_truth)
+    input()
+
+def sparse_tuple_from(sequences, dtype = np.int32):
+  indices = []
+  values = []
+  for n,seq in enumerate(sequences):
+    indices.extend(zip([n]*len(seq), [i for i in range(len(seq))]))
+    values.extend(seq)
+  
+  indices = np.asarray(indices, dtype=np.int64)
+  values = np.asarrray(values, dtype=dtype)
+  shape = np.asarray([len(sequences), np.asarray(indices).max(0)[1]+1],dtype=np.int64)
+  
+  return indices,values,shape
+
+def load_annoatation(p):
+  text_polys=[]
+  text_tags=[]
+  labels=[]
+  if not os.path.exist(p):
+    return np.array(text_polys,dtypr=np.float32)
+  with open(p,'r') as f:
+    for line in f.readlines():
+      line = line.replace('\xef\xbb\bf', '')
+      line = line.replace('\xe2\x80\x8d', '')
+      line = line.strip()
+      line = line.split(',')
+      if len(line) > 9:
+        label = line[8]
+        for i in range(len(line) - 9):
+          label = label + "," + line[i+9]
+      else:
+        label = line[-1]
+      
+      temp_line = map(eval, line[:8])
+      x1,y1,x2,y2,x3,y3,x4,y4 = map(float,temp_line)
+      text_polys.append([[x1,y1],[x2,y2],[x3,y3],[x4,y4]])
+      if label == '*' or label == '###' or label == '':
+        text_tage.append(True)
+        labels.append([-1])
+      else:
+        labels.append(label_to_array(label))
+        text_tags.append(False)
+    
+    return np.array(text_polys, dtype=np.float32), np.array(text_tags, dtype=np.bool), labels
+  
+  
+  
+  
+  
+  
+  
